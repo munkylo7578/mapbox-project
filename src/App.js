@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { CssBaseline, Grid } from "@material-ui/core";
-import { getPlacesData } from "./api/index";
+import { getPlacesData,getWeatherData } from "./api/index";
 import { Header, Map, List, PlaceDetails } from "./component";
 const App = () => {
+  const [newLocation,setNewLocation] = useState({})
+ 
   const [places, setPlaces] = useState([]);
   const [filteredPlaces,setFilteredPlaces] = useState([])
   const [type, setType] = useState("restaurants");
@@ -20,6 +22,7 @@ const App = () => {
   useEffect(()=>{
     setLoading(true)
     const timer = setTimeout(()=>{
+    
       getPlacesData(type,bounds._sw,bounds._ne).then((data) => {
         
         setPlaces(data);
@@ -34,13 +37,13 @@ const App = () => {
   return (
     <>
       <CssBaseline />
-      <Header />
+      <Header setNewLocation={setNewLocation}  />
       <Grid container spacing={3} style={{ width: "100%" }}>
         <Grid item xs={12} md={4}>
           <List loading={loading} type={type} setType={setType} rating={rating} setRating={setRating} places={filteredPlaces.length ? filteredPlaces : places}/>
         </Grid>
         <Grid item xs={12} md={8}>
-          <Map setCoordinates={setCoordinates} setBounds={setBounds} coordinates={coordinates} bounds={bounds} places={filteredPlaces.length ? filteredPlaces : places} />
+          <Map  newLocation={newLocation} setCoordinates={setCoordinates} setBounds={setBounds} coordinates={coordinates} bounds={bounds} places={filteredPlaces.length ? filteredPlaces : places} />
         </Grid>
       </Grid>
     </>

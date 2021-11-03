@@ -8,7 +8,7 @@ import LocationOnOutlinedIcon from '@material-ui/icons/LocationOnOutlined';
 import { Typography, Paper, useMediaQuery } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
 const MAPBOX_TOKEN =`${process.env.REACT_APP_MAPBOX_API_KEY}`;
-const Map = ({ coordinates, setBounds, bounds, setCoordinates, places }) => {
+const Map = ({ coordinates, setBounds, bounds, setCoordinates, places,newLocation }) => {
   const classes = useStyles();
   const isDesktop = useMediaQuery("(min-width:600px)");
   const mapRef = useRef(null);
@@ -22,23 +22,29 @@ const Map = ({ coordinates, setBounds, bounds, setCoordinates, places }) => {
     
     latitude: coordinates.lat,
     longitude: coordinates.lng,
-    zoom: 13,
+    zoom: 14,
   });
 
   // End map config
 
-  /* const handleChangePosition = useCallback(()=>{
-    const newBound = mapRef.current && mapRef.current.getMap().getBounds();
-  
-    setBounds({ ...newBound });
-  },[])  */
-  const handleViewportChange = useCallback((newViewport)=>{
-    const newBound = mapRef.current && mapRef.current.getMap().getBounds();
-    setViewport(newViewport)
-    setCoordinates({lng:viewport.longitude,lat:viewport.latitude})
+  useEffect(()=>{
+    setViewport((oldViewport)=>{
+      return (
+        {...oldViewport,longitude:newLocation.lng,latitude:newLocation.lat}
+      )
+      
+    })
     
-  
+  },[newLocation])
+ 
+  const handleViewportChange = useCallback((newViewport)=>{
+   
+    setViewport(newViewport)
+    const newBound = mapRef.current && mapRef.current.getMap().getBounds();
     setBounds({ ...newBound });
+    setCoordinates({lng:viewport.longitude,lat:viewport.latitude})
+  
+   
   },[coordinates])
   return (
     <div>
@@ -46,7 +52,7 @@ const Map = ({ coordinates, setBounds, bounds, setCoordinates, places }) => {
         ref={mapRef}
         {...viewport}
         mapStyle={"mapbox://styles/mapbox/streets-v11"}
-        width="900px"
+        width="800px"
         height="85vh"
         onViewportChange={handleViewportChange}
         mapboxApiAccessToken={MAPBOX_TOKEN}
@@ -91,6 +97,7 @@ const Map = ({ coordinates, setBounds, bounds, setCoordinates, places }) => {
             </Marker>
           );
         })}
+        
       </ReactMapGL>
     </div>
   );

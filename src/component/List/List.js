@@ -12,7 +12,7 @@ import useStyles from "./styles";
 import PlaceDetails from "../PlaceDetails/PlaceDetails";
 const List = ({ places, rating, setRating, type, setType, loading }) => {
   const classes = useStyles();
-
+  
   return (
     <>
       {places && (

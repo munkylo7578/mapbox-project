@@ -1,68 +1,85 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback,memo } from "react";
 import ReactMapGL, { GeolocateControl,FullscreenControl, Marker } from "react-map-gl";
-import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
+// eslint-disable-line import/no-webpack-loader-syntax
 import useStyles from "./styles";
 
-import { Restaurant } from "@material-ui/icons";
+
 import LocationOnOutlinedIcon from '@material-ui/icons/LocationOnOutlined';
 import { Typography, Paper, useMediaQuery } from "@material-ui/core";
 import { Rating } from "@material-ui/lab";
-const MAPBOX_TOKEN =`${process.env.REACT_APP_MAPBOX_API_KEY}`;
-const Map = ({ coordinates, setBounds, bounds, setCoordinates, places,newLocation }) => {
-  const classes = useStyles();
-  const isDesktop = useMediaQuery("(min-width:600px)");
-  const mapRef = useRef(null);
 
-  // Map config
-  const fullscreenControlStyle = {
-    right: 10,
-    top: 10,
-  };
+import "mapbox-gl/dist/mapbox-gl.css";
+import "react-map-gl-geocoder/dist/mapbox-gl-geocoder.css";
+
+
+import MapGL from "react-map-gl";
+import Geocoder from "react-map-gl-geocoder";
+
+// Please be a decent human and don't abuse my Mapbox API token.
+// If you fork this sandbox, replace my API token with your own.
+// Ways to set Mapbox token: https://uber.github.io/react-map-gl/#/Documentation/getting-started/about-mapbox-tokens
+
+const Map = ({places,setBounds}) => {
+  const classes = useStyles()
+const isDesktop = useMediaQuery("(min-width:600px)");
+const fullscreenControlStyle= {
+  right: 10,
+  top: 10
+};
   const [viewport, setViewport] = useState({
-    
-    latitude: coordinates.lat,
-    longitude: coordinates.lng,
-    zoom: 14,
+    latitude: 20.959902,
+    longitude: 107.042542,
+    zoom: 15
   });
-
-  // End map config
-
-  useEffect(()=>{
-    setViewport((oldViewport)=>{
-      return (
-        {...oldViewport,longitude:newLocation.lng,latitude:newLocation.lat}
-      )
-      
-    })
-    
-  },[newLocation])
- 
-  const handleViewportChange = useCallback((newViewport)=>{
-   
-    setViewport(newViewport)
-    const newBound = mapRef.current && mapRef.current.getMap().getBounds();
+  const geocoderContainerRef = useRef();
+  const mapRef = useRef();
+  const handleViewportChange = useCallback(
+    (newViewport) => setViewport(newViewport),
+    []
+  );
+    useEffect(()=>{
+      const newBound = mapRef.current && mapRef.current.getMap().getBounds();
     setBounds({ ...newBound });
-    setCoordinates({lng:viewport.longitude,lat:viewport.latitude})
-  
-   
-  },[coordinates])
+    },[viewport.latitude])
+  // if you are happy with Geocoder default settings, you can just use handleViewportChange directly
+  const handleGeocoderViewportChange = useCallback(
+    (newViewport) => {
+      const geocoderDefaultOverrides = { transitionDuration: 1000 };
+
+      return handleViewportChange({
+        ...newViewport,
+        ...geocoderDefaultOverrides
+      });
+    },
+    [handleViewportChange]
+  );
+
   return (
-    <div>
-      <ReactMapGL
+    <div style={{ height: "105vh" }}>
+      <div
+        ref={geocoderContainerRef}
+        style={{ position: "absolute", top: 20, left: 20, zIndex: 1 }}
+      />
+     
+      <MapGL
+      mapStyle={"mapbox://styles/mapbox/streets-v11"}
         ref={mapRef}
         {...viewport}
-        mapStyle={"mapbox://styles/mapbox/streets-v11"}
-        width="800px"
-        height="85vh"
+        width="100%"
+        height="100%"
+    
         onViewportChange={handleViewportChange}
-        mapboxApiAccessToken={MAPBOX_TOKEN}
+        mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_API_KEY}
       >
-        <GeolocateControl
-          positionOptions={{ enableHighAccuracy: true }}
-          trackUserLocation={true}
-          auto
+          <FullscreenControl style={fullscreenControlStyle} />
+        <Geocoder
+          mapRef={mapRef}
+          containerRef={geocoderContainerRef}
+          onViewportChange={handleGeocoderViewportChange}
+          mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_API_KEY}
+          position="top-left"
         />
-        <FullscreenControl style={fullscreenControlStyle} />
+        
         {places?.map((place, i) => {
           return (
             <Marker
@@ -97,8 +114,7 @@ const Map = ({ coordinates, setBounds, bounds, setCoordinates, places,newLocatio
             </Marker>
           );
         })}
-        
-      </ReactMapGL>
+      </MapGL>
     </div>
   );
 };

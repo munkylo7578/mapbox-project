@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,memo } from "react";
 import {
   CircularProgress,
   Grid,
@@ -11,6 +11,7 @@ import {
 import useStyles from "./styles";
 import PlaceDetails from "../PlaceDetails/PlaceDetails";
 const List = ({ places, rating, setRating, type, setType, loading }) => {
+  
   const classes = useStyles();
   
   return (
@@ -64,4 +65,4 @@ const List = ({ places, rating, setRating, type, setType, loading }) => {
   );
 };
 
-export default List;
+export default memo(List);

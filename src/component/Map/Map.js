@@ -40,7 +40,7 @@ const fullscreenControlStyle= {
     useEffect(()=>{
       const newBound = mapRef.current && mapRef.current.getMap().getBounds();
     setBounds({ ...newBound });
-    },[viewport.latitude])
+    },[viewport.latitude,viewport.longitude])
   // if you are happy with Geocoder default settings, you can just use handleViewportChange directly
   const handleGeocoderViewportChange = useCallback(
     (newViewport) => {
